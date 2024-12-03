@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/ChainSafe/sprinter-ts/compare/sprinter-react-v1.0.0...sprinter-react-v1.0.1) (2024-12-03)
+
+
+### Bug Fixes
+
+* **PoC:** readme, some errors and other nits ([#90](https://github.com/ChainSafe/sprinter-ts/issues/90)) ([f4fb199](https://github.com/ChainSafe/sprinter-ts/commit/f4fb1996b4d42db90f3c96b5869971f21cdc973e))
+
 ## [1.0.0](https://github.com/ChainSafe/sprinter-ts/compare/sprinter-react-v0.2.1...sprinter-react-v1.0.0) (2024-10-24)
 
 
