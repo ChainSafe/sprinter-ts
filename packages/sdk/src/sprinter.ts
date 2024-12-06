@@ -355,6 +355,7 @@ export class Sprinter {
    * - `recipient` (optional): The address of the recipient of any leftover tokens.
    * - `threshold` (optional): The minimum amount threshold required for the transfer.
    * - `sourceChains` (optional): An array of whitelisted source chain IDs for the transfer.
+   * - `enableSwaps` {boolean} (optional): Whether to enable token swaps on the source chain.
    *
    * @param {FetchOptions} [options] - Optional configuration for the fetch request, such as custom headers or query parameters.
    *
@@ -372,6 +373,7 @@ export class Sprinter {
    *   token: "USDC",
    *   amount: "100000000",
    *   recipient: "0xRecipientAddress", // Optional recipient of leftover tokens
+   *   enableSwaps: true,  // Enabling swaps on the source chain
    * };
    *
    * sprinter.transfer(settings).then(solution => {
@@ -422,6 +424,7 @@ export class Sprinter {
    * - `recipient` {string} (optional): The address of the recipient of any leftover tokens.
    * - `sourceChains` {Array<number>} (optional): An array of source chain IDs to be considered for the transfer.
    * - `threshold` {number} (optional): The minimum amount threshold required for the transfer.
+   * - `enableSwaps` {boolean} (optional): Whether to enable token swaps on the source chain.
    *
    * @param {FetchOptions} [options] - Optional configuration for the fetch request, such as custom headers or query parameters.
    *
@@ -444,6 +447,7 @@ export class Sprinter {
    *     gasLimit: 21000,
    *   },
    *   recipient: "0xRecipientAddress", // for sending leftover tokens
+   *   enableSwaps: true,  // Enabling swaps on the source chain
    * };
    *
    * sprinter.transferWithHook(settings).then(solution => {
