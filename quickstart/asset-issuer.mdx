@@ -7,9 +7,7 @@ description: "Onboard a T+X asset with Sprinter, then offer instant redemptions 
 
 If you issue an asset that settles on a delay — a tokenized treasury, a bond fund, a yield-bearing stablecoin, a structured vault — Sprinter can front the liquidity so your holders enter and exit instantly, while the underlying settles on your own rail in the background.
 
-<Warning>
-  **Asset onboarding comes first.** Sprinter can only quote an asset it has underwritten, allocated liquidity to and configured routes for. Until onboarding is complete, the quote endpoint will not return a price for your asset — there is nothing to integrate against yet. Start with step 1.
-</Warning>
+Your tokenized asset is onboarded first. Sprinter quotes only assets it has underwritten, allocated liquidity to and configured routes for, so onboarding is step 1 and the runtime calls follow from there.
 
 Two paths. The **solver model** described here gets you live without protocol changes. The **facility model** commits dedicated capacity and is agreed commercially — see [Redemption & Subscription Liquidity](/stash-v1/redemption-liquidity).
 
