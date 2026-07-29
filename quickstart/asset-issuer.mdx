@@ -35,17 +35,6 @@ This is a joint process, not a self-serve API call. Sprinter has to understand t
 | **Eligibility** — whether Sprinter needs whitelisting on the redemption rail, and the KYB steps | Sprinter must be able to actually redeem what it holds |
 | **Chains** — launch chain priority and planned expansion | Determines which pools and routes are configured |
 
-### What Sprinter does
-
-| Step | Typical duration |
-|---|---|
-| KYB and whitelisting | ~1 week |
-| Asset underwriting — settlement rail, price source, caps, fallback exit | 1–2 weeks, concurrent |
-| Integration — liquidity allocated, routes and protocol configuration | 1–2 weeks |
-| Soft launch on a single chain, then go-live | — |
-
-Underwriting assesses the *settlement path*, not the asset's price. See [Underwriting](/stash-v1/redemption-liquidity#underwriting) for the full criteria.
-
 ### Confirm the asset is live
 
 Before wiring up runtime calls, check that your token is returned by [supported tokens for a chain](/api-reference/sprinter/liquidity/returns-supported-tokens-for-a-chain). If it isn't there, onboarding is not complete and quotes will not return.
@@ -100,17 +89,6 @@ This is what makes the fill deterministic: the holder is quoted a price, and tha
 **If filled:** the holder receives USDC immediately on their chosen chain. Sprinter holds the position and settles it through your native rail. When settlement completes, Sprinter is repaid and the capital recycles into the next fill.
 
 **If the intent expires unfilled:** you reclaim the funds on the intent contract. Nothing is stranded — an unfilled intent is a no-op.
-
----
-
-## Division of responsibilities
-
-| You handle | Sprinter handles |
-|---|---|
-| Holder eligibility, KYC and whitelisting | Underwriting the asset and its settlement path |
-| Publishing the redemption intent | Allocating liquidity and configuring routes |
-| Settling the underlying on your native rail | Quoting the position and pricing the settlement delay |
-| NAV or price stream | Fronting USDC instantly, holding the position through the window |
 
 ## Next steps
 
