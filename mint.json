@@ -21,6 +21,12 @@
       "group": "Quickstart",
       "pages": [
         {
+          "group": "Asset Issuers",
+          "pages": [
+            "quickstart/asset-issuer"
+          ]
+        },
+        {
           "group": "Neobanks & Card Programmes",
           "pages": [
             "quickstart/credit-draw",
@@ -66,6 +72,7 @@
       "group": "Sprinter Liquidity",
       "pages": [
         "stash-v1/overview",
+        "stash-v1/redemption-liquidity",
         "stash-v1/contracts"
       ]
     },

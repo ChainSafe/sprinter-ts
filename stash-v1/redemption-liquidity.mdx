@@ -1,0 +1,72 @@
+---
+title: "Redemption & Subscription Liquidity"
+description: "Instant exit and entry on assets that settle T+X — for stablecoin and tokenized-asset issuers"
+---
+
+## Overview
+
+Most yield-bearing and tokenized assets share the same friction in both directions: **settlement takes time**. A holder who wants out waits for the issuer's redemption rail — T+1 for a tokenized treasury, T+4 for a bond fund, longer for structured products — or accepts a discount on a thin secondary market. A holder who wants in, especially from another chain, waits for settlement to complete before the position exists.
+
+Sprinter closes both gaps. We front the liquidity at the moment the user acts, then settle the underlying on the issuer's own rail in the background.
+
+<Note>
+  The credit is repaid by the settlement itself — the issuer's redemption or subscription mechanism — not by liquidating the asset. That is why it needs almost no collateral, and why the price is a function of **how long the rail takes**, not of how volatile the asset is.
+</Note>
+
+## Why issuers integrate
+
+- **No idle redemption buffer.** Instead of parking 3–10% of TVL to fund instant exits, outsource that function. Capital that would otherwise sit idle on your balance sheet earns yield in ours.
+- **Instant on both sides.** Exits settle immediately in USDC; crosschain deposits credit the position immediately while settlement completes behind it.
+- **Works on any settlement path.** Yield-bearing stablecoins, tokenized treasuries and funds, structured and tranched products, RWA-backed tokens. If it has a defined settlement path and a measurable delay, we can front it.
+- **Crosschain by default.** Sprinter's solver network services deposits and exits across supported networks, so a holder on one chain can enter or exit a position on another.
+- **Optional par experience.** By default Sprinter earns a spread on each fill. Issuers who want a frictionless experience can subsidise that spread so the end user transacts at par — $10 exited returns $10, with no visible fee. The financing cost shifts from the user to you, as a UX and acquisition investment.
+
+## Two integration models
+
+They can be used separately or together.
+
+| | Facility model | Solver model |
+|---|---|---|
+| **Shape** | You commit a facility with Sprinter, sized as a fixed amount or a share of TVL | Sprinter quotes and fills through an intent protocol on the secondary market |
+| **How it settles** | Sprinter honours instant credits and exits directly, then queues the underlying settlement | Sprinter buys the position, delivers USDC instantly, then processes the redemption through your native queue |
+| **Best for** | Predictable capacity, a published instant-redemption promise to your users | Getting live quickly with no protocol changes |
+| **Integration effort** | Facility agreement plus asset underwriting | API quote plus intent creation — see the [quickstart](/quickstart/asset-issuer) |
+
+## How pricing works
+
+Credit is priced **per day outstanding**, so the spread is set by the length of your settlement rail:
+
+| Settlement rail | Capital locked | Relative spread per fill |
+|---|---|---|
+| Same-day | Hours | Lowest |
+| T+1 | ~1 day | Low |
+| T+2 – T+3 | 2–3 days | Moderate |
+| T+5 – T+7 | 5–7 days | Highest |
+
+A committed facility is quoted as an annual rate on committed capacity; just-in-time draws are charged per day and repaid by the settlement. They are the same price expressed two ways. Facility size, rate and any collateral requirement are set per asset during underwriting.
+
+**Who bears the cost** is a per-facility decision: the end user as a deducted fee, the issuer as a subsidy for a par experience, or a blend.
+
+## Underwriting
+
+Before committing a facility, Sprinter underwrites the asset. The assessment is about the *settlement path*, not the asset's price:
+
+- **Settlement delay** on entry and exit, and its variability — holidays, business-day conventions, valuation cut-offs
+- **Rail reliability** — historical settlement performance, and any daily or per-valuation caps on redemption volume
+- **Price source** — NAV stream or oracle, its cadence and staleness bounds
+- **Issuer reserve adequacy** — whether you maintain your own instant buffer, and how it refreshes
+- **Secondary market depth** — availability of a fallback exit for positions held during the settlement window
+- **Eligibility mechanics** — whitelisting, KYC and any transfer restrictions that apply to Sprinter as counterparty
+
+Underwriting typically takes 1–2 weeks and runs concurrently with onboarding and contract scoping.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Asset Issuer Quickstart" icon="rocket" href="/quickstart/asset-issuer">
+    Integrate instant redemptions in three API steps.
+  </Card>
+  <Card title="Talk to us" icon="comments" href="https://t.me/sprinter_tech/1">
+    Facility sizing, pricing, and asset underwriting.
+  </Card>
+</CardGroup>

@@ -5,7 +5,11 @@ description: "Sprinter Liquidity is a credit-based liquidity protocol for crossc
 
 # Sprinter Liquidity
 
-Sprinter Liquidity is a credit-based liquidity protocol that connects stablecoin LPs with crosschain actors like solvers and strategists, bridging the gap between passive capital and high-frequency, crosschain demand.
+Sprinter Liquidity is a credit-based liquidity protocol that connects stablecoin LPs with the actors who need funding for a settlement delay — crosschain solvers filling intents, and asset issuers offering instant redemptions and subscriptions on assets that settle T+X. It bridges the gap between passive capital and high-frequency demand for short-duration credit.
+
+<Note>
+  Issuing an asset with a settlement delay? See [Redemption & Subscription Liquidity](/stash-v1/redemption-liquidity) for the issuer-facing product, and the [Asset Issuer quickstart](/quickstart/asset-issuer) to integrate.
+</Note>
 
 ## Why Sprinter Liquidity?
 
@@ -28,7 +32,7 @@ Sprinter Liquidity enables capital-efficient crosschain execution by removing th
 ## How Sprinter Liquidity Works
 
 1. **Liquidity Providers deposit USDC on Base from any chain into the protocol's liquidity hub** - Receiving spUSDC-LP tokens in return. Liquidity is then managed across the pools on supported chains.
-2. **Solvers access liquidity instantly, without collateral** – Solvers execute their fills through Sprinter Liquidity. After a fill is completed via credit, Sprinter receives the deposited funds on the source chain, repaying the credit and keeping profits for LPs and solvers. It works as a closed credit system where the MPC validates all intents to be filled and ensures credit will be repaid.
+2. **Solvers access liquidity instantly, without collateral** – Solvers execute their fills through Sprinter Liquidity. After a fill is completed via credit, Sprinter receives the deposited funds on the source chain, repaying the credit and keeping profits for LPs and solvers. It works as a closed credit system — **Closed-System Embedding** — where the MPC validates all intents to be filled and ensures credit will be repaid.
 3. **LPs earn dynamic rewards** – Yield is optimized through a combination of base yield from supply in lending protocols, such as Aave, and yield from solver borrow fees. LPs are also eligible to earn staking rewards in the form of SPRNT emissions, with higher multipliers for longer locks in addition to bonus incentives for earlybirds.
 4. Once **fills are completed**, Sprinter receives funds on the source chain, repays the credit, and distributes profits to LPs and solvers.
 
