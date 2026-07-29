@@ -9,6 +9,8 @@ The Policy Engine is what makes Sprinter credit _configurable_. Rather than one-
 
 The tighter the constraints, the less collateral is needed — because the protocol's downside risk is bounded. This is how Sprinter can offer favourable or even undercollateralised credit terms: not because the risk disappears, but because it is constrained.
 
+We call this **Closed-System Embedding (CSE)**. It has three parts: the **credit account** the position lives in, whose egress is constrained while debt exists; the **policy** that defines what actions are permitted; and the **recovery module** that unwinds the position repay-first, returning any surplus. Collateral assumes the worst will happen and oversizes against it. CSE prevents the worst from happening.
+
 ## Credit Operators
 
 Operators are the delegation primitive in Sprinter Credit. They allow a user to grant a third party — an app, a backend, an agent — the ability to act on their credit position without handing over custody.
