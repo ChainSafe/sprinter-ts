@@ -9,6 +9,8 @@ Most yield-bearing and tokenized assets share the same friction in both directio
 
 Sprinter closes both gaps. We front the liquidity at the moment the user acts, then settle the underlying on the issuer's own rail in the background.
 
+Every asset is onboarded before it can be quoted — Sprinter underwrites the settlement path, allocates liquidity against it and configures routes. See the [Asset Issuer quickstart](/quickstart/asset-issuer) for what onboarding involves.
+
 <Note>
   The credit is repaid by the settlement itself — the issuer's redemption or subscription mechanism — not by liquidating the asset. That is why it needs almost no collateral, and why the price is a function of **how long the rail takes**, not of how volatile the asset is.
 </Note>
@@ -30,7 +32,7 @@ They can be used separately or together.
 | **Shape** | You commit a facility with Sprinter, sized as a fixed amount or a share of TVL | Sprinter quotes and fills through an intent protocol on the secondary market |
 | **How it settles** | Sprinter honours instant credits and exits directly, then queues the underlying settlement | Sprinter buys the position, delivers USDC instantly, then processes the redemption through your native queue |
 | **Best for** | Predictable capacity, a published instant-redemption promise to your users | Getting live quickly with no protocol changes |
-| **Integration effort** | Facility agreement plus asset underwriting | API quote plus intent creation — see the [quickstart](/quickstart/asset-issuer) |
+| **Integration effort** | Asset onboarding plus a facility agreement | Asset onboarding, then API quote plus intent creation — see the [quickstart](/quickstart/asset-issuer) |
 
 ## How pricing works
 
