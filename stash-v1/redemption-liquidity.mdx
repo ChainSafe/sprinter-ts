@@ -5,7 +5,7 @@ description: "Instant exit and entry on assets that settle T+X — for stablecoi
 
 ## Overview
 
-Most yield-bearing and tokenized assets share the same friction in both directions: **settlement takes time**. A holder who wants out waits for the issuer's redemption rail — T+1 for a tokenized treasury, T+4 for a bond fund, longer for structured products — or accepts a discount on a thin secondary market. A holder who wants in, especially from another chain, waits for settlement to complete before the position exists.
+Most yield-bearing and tokenized assets share the same friction in both directions: **settlement takes time**. A holder who wants out waits for the issuer's redemption rail — T+1 for a tokenized treasury, T+4 for a bond fund, T+30 for some structured products — or accepts a discount on a thin secondary market. A holder who wants in, especially from another chain, waits for settlement to complete before the position exists.
 
 Sprinter closes both gaps. We front the liquidity at the moment the user acts, then settle the underlying on the issuer's own rail in the background.
 
@@ -41,7 +41,8 @@ Credit is priced **per day outstanding**, so the spread is set by the length of 
 | Same-day | Hours | Lowest |
 | T+1 | ~1 day | Low |
 | T+2 – T+3 | 2–3 days | Moderate |
-| T+5 – T+7 | 5–7 days | Highest |
+| T+5 – T+7 | 5–7 days | High |
+| T+8 – T+30 | up to 30 days | Highest |
 
 A committed facility is quoted as an annual rate on committed capacity; just-in-time draws are charged per day and repaid by the settlement. They are the same price expressed two ways. Facility size, rate and any collateral requirement are set per asset during underwriting.
 
