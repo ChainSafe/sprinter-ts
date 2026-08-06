@@ -144,12 +144,20 @@
       ]
     },
     {
-      "group": "Swaps",
+      "group": "Solve RFQ",
       "pages": [
-        "api-reference/solve/overview",
+        "api-reference/solve-rfq/overview",
         {
-          "group": "Swap Actions",
+          "group": "LI.FI Intents",
           "pages": [
+            "api-reference/sprinter/lifi-intents/rfq",
+            "api-reference/sprinter/lifi-intents/transaction"
+          ]
+        },
+        {
+          "group": "Swap API",
+          "pages": [
+            "api-reference/solve/overview",
             "api-reference/solve/get-v1route"
           ]
         }

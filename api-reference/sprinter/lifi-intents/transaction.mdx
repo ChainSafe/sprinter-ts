@@ -1,0 +1,140 @@
+---
+title: "Build the Escrow Open Transaction"
+sidebarTitle: "Transaction"
+openapi: post /lifi-intents/transaction
+---
+
+Turns a quote into an unsigned `open` call on the LI.FI input settler escrow. POST the quote object you received from [`GET /lifi-intents/rfq`](/api-reference/sprinter/lifi-intents/rfq); you get the same object back with `transactionRequest` populated.
+
+Sending that transaction escrows the inputs on the origin chain and broadcasts the order to solvers.
+
+<Warning>
+Include the `quoteId` from the RFQ response. Without it the endpoint still returns valid calldata, but **no liquidity is reserved** and the order is not guaranteed a Sprinter fill — you get no error saying so.
+</Warning>
+
+## What the endpoint fills in
+
+You supply `preview`; everything else is derived:
+
+| Field | Derived as |
+|---|---|
+| `nonce` | Generated per request |
+| `fillDeadline` | ~6 minutes out — 1 minute exclusive to Sprinter, then 5 minutes open to any solver |
+| `expires` | `fillDeadline` + a settlement buffer: ~13 minutes for same-chain orders, ~12 hours for cross-chain |
+| `inputOracle` / output oracle | From Sprinter's configuration |
+| Exclusivity | Encoded per output; defaults to Sprinter's filler address |
+| `value` | Sum of native-token inputs, hex encoded. `0x0` for ERC-20-only orders |
+
+You can override `nonce`, `expires`, `fillDeadline` and `inputOracle` by setting them in the `order` object on the request, and override the exclusive filler with `metadata.exclusiveFor`. Leave them unset unless you have a specific reason — the defaults are what the reservation is priced against.
+
+## Constraints
+
+- Every entry in `preview.inputs` must be on the same origin chain. Mixed origins are rejected with `400`.
+- The returned transaction must be sent by `transactionRequest.from` — the payer named in the first input.
+- Send it promptly. Converting the quote extends the reservation by one minute; after that the liquidity is released.
+
+<RequestExample>
+```bash cURL
+curl --request POST \
+  --url 'https://api.sprinter.tech/lifi-intents/transaction' \
+  --header 'Content-Type: application/json' \
+  --data @quote.json
+```
+
+```python Python
+import requests
+
+# `quote` is quotes[0] from the RFQ response, passed through unchanged
+response = requests.post(
+    "https://api.sprinter.tech/lifi-intents/transaction",
+    json=quote,
+)
+tx = response.json()["transactionRequest"]
+```
+
+```javascript JavaScript
+// `quote` is quotes[0] from the RFQ response, passed through unchanged
+const response = await fetch(
+  "https://api.sprinter.tech/lifi-intents/transaction",
+  {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(quote),
+  }
+);
+const { transactionRequest } = await response.json();
+
+// send it from the user's wallet
+const hash = await walletClient.sendTransaction({
+  to: transactionRequest.to,
+  data: transactionRequest.data,
+  value: BigInt(transactionRequest.value),
+  chainId: transactionRequest.chainId,
+});
+```
+
+```go Go
+package main
+
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"net/http"
+)
+
+func main() {
+	// quoteJSON is quotes[0] from the RFQ response, passed through unchanged
+	resp, _ := http.Post(
+		"https://api.sprinter.tech/lifi-intents/transaction",
+		"application/json",
+		bytes.NewReader(quoteJSON),
+	)
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+	fmt.Println(string(body))
+}
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "validUntil": 1754481615,
+  "eta": 45,
+  "quoteId": "3f8a1c72-95e4-4d6b-b0a1-2c7e9f4d8a13",
+  "provider": "sprinter",
+  "preview": {
+    "inputs": [
+      {
+        "user": "0x00010000022105141f98431c8ad98523631ae4a59f267346ea31f984",
+        "asset": "0x0001000002210514833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "amount": "100000000"
+      }
+    ],
+    "outputs": [
+      {
+        "receiver": "0x0001000002a4b1141f98431c8ad98523631ae4a59f267346ea31f984",
+        "asset": "0x0001000002a4b114af88d065e77c8cc2239327c5edb3a432268e5831",
+        "amount": "99850000"
+      }
+    ]
+  },
+  "metadata": {
+    "exclusiveFor": "0x4c4A2f8c81640e47606d3fd77B353E87Ba015584"
+  },
+  "failureHandling": "refund-automatic",
+  "transactionRequest": {
+    "from": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+    "to": "0x6E9a1b3F0c5D2a8B4e7C1f9A3d6B0e5C8f2A4d71",
+    "chainId": 8453,
+    "data": "0xff2b0c2b0000000000000000000000000000000000000000000000000000000000000020",
+    "value": "0x0"
+  }
+}
+```
+</ResponseExample>
+
+## After the fill
+
+Sprinter fills on the destination chain within the exclusivity window and is repaid when the escrow settles. If nobody fills before `fillDeadline`, the order is reclaimable on the escrow contract — `failureHandling` is `refund-automatic`, so nothing is stranded.
