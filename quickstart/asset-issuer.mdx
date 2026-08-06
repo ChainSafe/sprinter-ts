@@ -14,8 +14,8 @@ Two paths. The **solver model** described here gets you live without protocol ch
 The sequence is one onboarding phase, then three runtime steps per redemption:
 
 1. **Onboard the asset** — one time. Underwriting, liquidity allocation, route configuration
-2. **Quote** — ask Sprinter what it will pay for the position
-3. **Create intent** — publish the redemption as an exclusive limit order to Sprinter
+2. **Quote** — ask Sprinter what it will pay for the position. Liquidity is reserved against the answer
+3. **Open the order** — hand the quote back and get a transaction to send
 4. **Settle** — Sprinter fills instantly; you settle the underlying on your rail
 
 ---
@@ -52,47 +52,69 @@ Once the asset is live, this runs per redemption.
 <div style={{ paddingRight: "120px" }}>
 ```mermaid
 flowchart TD
-  A[Holder submits redemption] --> B[Request borrow quote from Sprinter Liquidity API]
+  A[Holder submits redemption] --> B[GET /lifi-intents/rfq<br/>liquidity reserved for 15s]
   B --> C{Quote returned?}
-  C -->|Yes| D[Create intent as exclusive limit order<br/>filler = quote address]
+  C -->|Yes| D[POST /lifi-intents/transaction<br/>returns open call data]
   C -->|No| E[Fall back to native redemption queue]
-  D --> F[Sprinter fills instantly in USDC on the holder's chain]
-  F --> G[Sprinter holds the position and settles on your T+X rail]
-  G --> H[Settlement repays Sprinter — capital recycles]
-  D -.->|intent expires unfilled| I[You reclaim funds on the intent contract]
+  D --> F[Send the transaction — inputs escrowed on-chain]
+  F --> G[Sprinter fills instantly in USDC on the holder's chain]
+  G --> H[Sprinter holds the position and settles on your T+X rail]
+  H --> I[Settlement repays Sprinter — capital recycles]
+  F -.->|order expires unfilled| J[You reclaim funds on the escrow contract]
 ```
 </div>
 
 ### Step 2 — Request a quote
 
-Ask the Sprinter Liquidity API what it will pay for the position on the holder's chosen chain. See [Get the borrow quote](/api-reference/sprinter/liquidity/get-the-borrow-quote-for-a-liquidity-transaction-based-on-the-input-data) for the request and response schema.
+Call [`GET /lifi-intents/rfq`](/api-reference/sprinter/lifi-intents/rfq) with the position, the holder's chain, and where the proceeds should land.
 
-The quote returns a price and the **address that will fill it**. Keep that address — step 3 needs it.
+```bash
+curl --request GET \
+  --url 'https://api.sprinter.tech/lifi-intents/rfq?srcChain=eip155:8453&dstChain=eip155:8453&amount=100000000&token=0x833589fcd6edb6e08f4c7c32d4f71b54bda02913&srcToken=YOUR_ASSET_ADDRESS&user=HOLDER_ADDRESS' \
+  --header 'X-Auth-Token: YOUR_API_KEY'
+```
+
+The response is a firm price with **liquidity already reserved against it**. Keep the whole quote object — step 3 takes it verbatim.
+
+<Warning>
+  A quote is valid for **15 seconds**, and the reservation expires with it. Go straight from step 2 to step 3 — do not park a quote behind a user confirmation screen. If the holder needs to confirm, confirm first and quote after.
+</Warning>
 
 <Note>
-  Quotes are time-bounded. Treat a returned quote as valid only for its stated window and re-quote rather than reusing a stale one. If no quote returns for an onboarded asset — capacity is exhausted, the price is stale, or the size exceeds a limit — fall back to your native redemption queue. Sprinter declining a fill should never block a holder from redeeming.
+  If no quote returns for an onboarded asset, fall back to your native redemption queue. A `404` means no pool can serve the size right now and is worth one retry after a short backoff; a `400` means the route is not configured and retrying will not help. Sprinter declining a fill should never block a holder from redeeming.
 </Note>
 
-### Step 3 — Create the intent
+### Step 3 — Open the order
 
-Publish the redemption as an intent through your intent protocol — for example with the [LI.FI SDK](https://docs.li.fi/sdk/overview), creating a [LI.FI intent](https://docs.li.fi/lifi-intents/intents-api/create-and-submit).
+POST the quote back to [`POST /lifi-intents/transaction`](/api-reference/sprinter/lifi-intents/transaction). You get the same object with a `transactionRequest` on it — an unsigned `open` call on the escrow contract.
 
-Two things matter:
+```bash
+curl --request POST \
+  --url 'https://api.sprinter.tech/lifi-intents/transaction' \
+  --header 'Content-Type: application/json' \
+  --data @quote.json
+```
 
-- Create it as an **exclusive limit order**, not an open order
-- Set the **quote's address as the exclusive filler**, so only Sprinter can fill at the quoted price
+Send that transaction from the holder's wallet. It escrows the position and publishes the order.
 
-This is what makes the fill deterministic: the holder is quoted a price, and that exact price is what fills.
+You no longer construct the intent yourself. Sprinter builds it as an exclusive limit order with itself as the filler, priced at the quote, with the deadlines already set — which is what makes the fill deterministic: the holder is quoted a price, and that exact price is what fills.
+
+<Note>
+  Include the `quoteId` from step 2 — it is what ties the order to the reserved liquidity. Post a quote without one and you still get valid call data, but nothing is held for it.
+</Note>
 
 ### Step 4 — Settle, or reclaim
 
 **If filled:** the holder receives USDC immediately on their chosen chain. Sprinter holds the position and settles it through your native rail. When settlement completes, Sprinter is repaid and the capital recycles into the next fill.
 
-**If the intent expires unfilled:** you reclaim the funds on the intent contract. Nothing is stranded — an unfilled intent is a no-op.
+**If the order expires unfilled:** you reclaim the funds on the escrow contract. Nothing is stranded — an unfilled order is a no-op.
 
 ## Next steps
 
 <CardGroup cols={2}>
+  <Card title="Solve RFQ" icon="code" href="/api-reference/solve-rfq/overview">
+    Endpoint reference for both runtime calls, and when to use the Swap API instead.
+  </Card>
   <Card title="Redemption & Subscription Liquidity" icon="book" href="/stash-v1/redemption-liquidity">
     How the product works, pricing shape, and underwriting criteria.
   </Card>

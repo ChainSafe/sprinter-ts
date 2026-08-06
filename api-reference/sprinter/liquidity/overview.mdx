@@ -9,6 +9,12 @@ The Liquidity API exposes **Sprinter Intent Liquidity** that can be accessed thr
 These are **zero-collateral** loans — solvers borrow without locking upfront capital. Repayment is secured by the intent protocol's escrow and settlement flow.
 </Note>
 
+<Warning>
+**This is the solver-facing surface.** It returns a borrow authorization and expects you to run your own fill and settlement.
+
+If you are an asset issuer, wallet, or application that wants a price and a transaction to send, use [Solve RFQ](/api-reference/solve-rfq/overview) instead. [`GET /lifi-intents/rfq`](/api-reference/sprinter/lifi-intents/rfq) runs this same pricing and reservation pipeline and hands back something you can sign.
+</Warning>
+
 ## Base URL
 
 ```
