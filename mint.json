@@ -75,6 +75,12 @@
       ]
     },
     {
+      "group": "Pricing",
+      "pages": [
+        "pricing"
+      ]
+    },
+    {
       "group": "Resources",
       "pages": [
         "resources/audits",

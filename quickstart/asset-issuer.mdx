@@ -23,7 +23,7 @@ Most tokenized assets share the same friction in both directions. A holder who w
 
 Your tokenized asset is onboarded first. Sprinter quotes only assets it has underwritten, allocated liquidity to and configured routes for, so onboarding is step 1 and the runtime calls follow from there.
 
-Two paths. The **solver model** described here gets you live without protocol changes. The **facility model** commits dedicated capacity and is agreed commercially — see [Integration models](#integration-models) below.
+Two paths. The flow described here draws on **shared liquidity** and gets you live without a commercial agreement. A **dedicated facility** commits capacity to your flow and is agreed commercially — see [Pricing & Credit Facilities](/pricing) for both, and what a fill costs.
 
 The sequence is one onboarding phase, then three runtime steps per redemption:
 
@@ -127,45 +127,14 @@ You no longer construct the intent yourself. Sprinter builds it as an exclusive 
 
 **If the order expires unfilled:** you reclaim the funds on the escrow contract. Nothing is stranded — an unfilled order is a no-op.
 
----
-
-## Integration models
-
-The two models can be used separately or together.
-
-| | Facility model | Solver model |
-|---|---|---|
-| **Shape** | You commit a facility with Sprinter, sized as a fixed amount or a share of TVL | Sprinter quotes on request and fills as the exclusive solver on the secondary market |
-| **How it settles** | Sprinter honours instant credits and exits directly, then queues the underlying settlement | Sprinter buys the position, delivers USDC instantly, then processes the redemption through your native queue |
-| **Best for** | Predictable capacity, a published instant-redemption promise to your users | Getting live quickly with no protocol changes |
-| **Integration effort** | Asset onboarding plus a facility agreement | Asset onboarding, then the two runtime calls above |
-
-The runtime flow on this page is the solver model. For a committed facility, [talk to us](https://t.me/sprinter_tech/1) — sizing, rate and any collateral requirement are agreed per asset during underwriting.
-
-## Pricing
-
-Credit is priced **per day outstanding**, so the spread is set by the length of your settlement rail:
-
-| Settlement rail | Capital locked | Relative spread per fill |
-|---|---|---|
-| Same-day | Hours | Lowest |
-| T+1 | ~1 day | Low |
-| T+2 – T+3 | 2–3 days | Moderate |
-| T+5 – T+7 | 5–7 days | High |
-| T+8 – T+30 | up to 30 days | Highest |
-
-A committed facility is quoted as an annual rate on committed capacity; just-in-time draws are charged per day and repaid by the settlement. They are the same price expressed two ways.
-
-**Who bears the cost** is a per-facility decision: the end user as a deducted fee, the issuer as a subsidy for a par experience, or a blend.
-
 ## Next steps
 
 <CardGroup cols={2}>
+  <Card title="Pricing & Credit Facilities" icon="tag" href="/pricing">
+    What a fill costs, and whether you want shared liquidity or a dedicated facility.
+  </Card>
   <Card title="Solve RFQ" icon="code" href="/api-reference/solve-rfq/overview">
     Endpoint reference for both runtime calls, and when to use the Swap API instead.
-  </Card>
-  <Card title="Sprinter Liquidity" icon="book" href="/stash-v1/overview">
-    How the liquidity protocol works, and the two ways to access it.
   </Card>
   <Card title="Start onboarding" icon="comments" href="https://t.me/sprinter_tech/1">
     Facility sizing, pricing, and asset underwriting.
