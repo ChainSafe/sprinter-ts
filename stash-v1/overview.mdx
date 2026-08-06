@@ -7,8 +7,17 @@ description: "Sprinter Liquidity is a credit-based liquidity protocol for crossc
 
 Sprinter Liquidity is a credit-based liquidity protocol that connects stablecoin LPs with the actors who need funding for a settlement delay — crosschain solvers filling intents, and asset issuers offering instant redemptions and subscriptions on assets that settle T+X. It bridges the gap between passive capital and high-frequency demand for short-duration credit.
 
+## Two ways to access it
+
+| | **LI.FI Intents** | **Liquidity API** |
+|---|---|---|
+| **For** | Asset issuers, wallets, applications | Crosschain solvers running their own fill infrastructure |
+| **You get** | A firm quote and a transaction to send | A borrow quote and an MPC-signed authorization |
+| **You run** | Nothing — Sprinter builds the order and fills it | Your own fill and settlement |
+| **Start at** | [`GET /lifi-intents/rfq`](/api-reference/sprinter/lifi-intents/rfq) | [Integration Guide](/stash-v1/integration-guide) |
+
 <Note>
-  Issuing an asset with a settlement delay? See [Redemption & Subscription Liquidity](/stash-v1/redemption-liquidity) for the issuer-facing product, and the [Asset Issuer quickstart](/quickstart/asset-issuer) to integrate.
+  Issuing an asset with a settlement delay? Go to the [Asset Issuer quickstart](/quickstart/asset-issuer) — it covers onboarding, the two runtime calls, pricing and the integration models.
 </Note>
 
 ## Why Sprinter Liquidity?
@@ -120,4 +129,11 @@ _Initial fee split is reviewed monthly by governance._
 
 ## Start integrating
 
-For DeFi solvers: check out the [Sprinter Liquidity Integration Guide](/stash-v1/integration-guide).
+<CardGroup cols={2}>
+  <Card title="Asset issuers, wallets & apps" icon="building-columns" href="/quickstart/asset-issuer">
+    Quote and fill through LI.FI Intents — two API calls, no fill infrastructure of your own.
+  </Card>
+  <Card title="Crosschain solvers" icon="arrows-rotate" href="/stash-v1/integration-guide">
+    Borrow zero-collateral credit on demand and run your own fills.
+  </Card>
+</CardGroup>

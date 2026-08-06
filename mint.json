@@ -71,9 +71,7 @@
     {
       "group": "Sprinter Liquidity",
       "pages": [
-        "stash-v1/overview",
-        "stash-v1/redemption-liquidity",
-        "stash-v1/contracts"
+        "stash-v1/overview"
       ]
     },
     {
@@ -167,6 +165,16 @@
   "openapi": [
     "api-reference/sprinter/openapi.json",
     "api-reference/solve/openapi.yaml"
+  ],
+  "redirects": [
+    {
+      "source": "/stash-v1/redemption-liquidity",
+      "destination": "/quickstart/asset-issuer"
+    },
+    {
+      "source": "/stash-v1/contracts",
+      "destination": "/stash-v1/overview"
+    }
   ],
   "logo": {
     "light": "/logo/light.svg",
