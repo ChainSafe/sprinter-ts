@@ -71,7 +71,8 @@
     {
       "group": "Sprinter Liquidity",
       "pages": [
-        "stash-v1/overview"
+        "stash-v1/overview",
+        "solve-rfq"
       ]
     },
     {
