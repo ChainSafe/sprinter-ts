@@ -119,6 +119,8 @@ You no longer construct the intent yourself. Sprinter builds it as an exclusive 
 
 <Note>
   Include the `quoteId` from step 2 — it is what ties the order to the reserved liquidity. Post a quote without one and you still get valid call data, but nothing is held for it.
+
+  With a `quoteId`, this call refreshes the reservation to **60 seconds from the response** — that is the budget for signing and broadcasting, not the 15 seconds the quote had.
 </Note>
 
 ### Step 4 — Settle, or reclaim

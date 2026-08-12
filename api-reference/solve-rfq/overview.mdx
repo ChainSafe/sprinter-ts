@@ -25,6 +25,7 @@ Two calls. The first prices the order and holds the liquidity; the second turns 
 ```
 GET  /lifi-intents/rfq          → quote (liquidity reserved, 15s)
 POST /lifi-intents/transaction  → same quote + unsigned open() calldata
+                                → reservation refreshed to 60s from this call
                                 → user sends it; Sprinter fills
 ```
 

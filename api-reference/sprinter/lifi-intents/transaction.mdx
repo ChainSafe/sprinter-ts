@@ -12,6 +12,21 @@ Sending that transaction escrows the inputs on the origin chain and broadcasts t
 Include the `quoteId` from the RFQ response. Without it the endpoint still returns valid calldata, but **no liquidity is reserved** and the order is not guaranteed a Sprinter fill — you get no error saying so.
 </Warning>
 
+## Reservation window
+
+Converting a quote **refreshes its reservation to 60 seconds, counted from this call** — not from the RFQ. That is the window you have to get the transaction signed and on-chain.
+
+| | |
+|---|---|
+| **Held for** | 60 seconds from the `/transaction` response |
+| **Applies when** | The posted quote carries a `quoteId`. The 15-second RFQ reservation is extended to the full 60 seconds and re-keyed from the quote id to the on-chain order id |
+| **Without a `quoteId`** | Nothing is reserved and nothing is refreshed |
+| **After it lapses** | The liquidity is released back to the pool. The calldata stays valid and the order is still fillable, but no longer guaranteed a Sprinter fill |
+
+<Note>
+Reservations come out of a pool **shared with other solvers**, so liquidity held against your quote is liquidity nobody else can be quoted. Each conversion holds its full amount for 60 seconds — four times the RFQ window — and the hold is not released early if you never send the transaction. Test this endpoint with small amounts: a loop over real quote sizes can take a meaningful share of a pool out of circulation a minute at a time.
+</Note>
+
 ## What the endpoint fills in
 
 You supply `preview`; everything else is derived:
@@ -31,7 +46,7 @@ You can override `nonce`, `expires`, `fillDeadline` and `inputOracle` by setting
 
 - Every entry in `preview.inputs` must be on the same origin chain. Mixed origins are rejected with `400`.
 - The returned transaction must be sent by `transactionRequest.from` — the payer named in the first input.
-- Send it promptly. Converting the quote extends the reservation by one minute; after that the liquidity is released.
+- Send it promptly — the reservation lapses 60 seconds after this call. See [Reservation window](#reservation-window).
 
 <RequestExample>
 ```bash cURL
