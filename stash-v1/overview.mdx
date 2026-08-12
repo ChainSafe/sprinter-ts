@@ -7,8 +7,14 @@ description: "Sprinter Liquidity is a credit-based liquidity protocol for crossc
 
 Sprinter Liquidity is a credit-based liquidity protocol that connects stablecoin LPs with the actors who need funding for a settlement delay — crosschain solvers filling intents, and asset issuers offering instant redemptions and subscriptions on assets that settle T+X. It bridges the gap between passive capital and high-frequency demand for short-duration credit.
 
+## Two ways to access it
+
+**[Solve RFQ](/solve-rfq)** is the path for asset issuers, wallets and applications: you get a firm quote with liquidity reserved behind it, plus a transaction to send. Sprinter builds the order and fills it.
+
+The **Liquidity API** is the path for crosschain solvers running their own fill infrastructure: you get a borrow quote and an MPC-signed authorization, and you run the fill and settlement yourself. See the [Integration Guide](/stash-v1/integration-guide).
+
 <Note>
-  Issuing an asset with a settlement delay? See [Redemption & Subscription Liquidity](/stash-v1/redemption-liquidity) for the issuer-facing product, and the [Asset Issuer quickstart](/quickstart/asset-issuer) to integrate.
+  Issuing an asset with a settlement delay? Go to the [Asset Issuer quickstart](/quickstart/asset-issuer) for onboarding and the two runtime calls, and [Pricing & Credit Facilities](/pricing) for what a fill costs and whether you want shared liquidity or a dedicated facility.
 </Note>
 
 ## Why Sprinter Liquidity?
@@ -120,4 +126,11 @@ _Initial fee split is reviewed monthly by governance._
 
 ## Start integrating
 
-For DeFi solvers: check out the [Sprinter Liquidity Integration Guide](/stash-v1/integration-guide).
+<CardGroup cols={2}>
+  <Card title="Asset issuers, wallets & apps" icon="building-columns" href="/quickstart/asset-issuer">
+    Quote and fill through LI.FI Intents — two API calls, no fill infrastructure of your own.
+  </Card>
+  <Card title="Crosschain solvers" icon="arrows-rotate" href="/stash-v1/integration-guide">
+    Borrow zero-collateral credit on demand and run your own fills.
+  </Card>
+</CardGroup>

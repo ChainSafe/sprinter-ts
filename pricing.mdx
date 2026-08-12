@@ -1,0 +1,105 @@
+---
+title: "Pricing & Credit Facilities"
+description: "How Sprinter prices short-duration credit, and the two ways to access it — shared liquidity or a dedicated committed facility"
+---
+
+Sprinter lends against a **settlement delay**. Credit is priced per day outstanding, so the cost of a fill is a function of how long your rail takes to settle — not of how volatile the asset is. The credit is repaid by the settlement itself, which is why it needs almost no collateral.
+
+There are two ways to access that credit.
+
+## Facility types
+
+| | **Shared liquidity** | **Dedicated facility** |
+|---|---|---|
+| **Capacity** | Drawn just-in-time from Sprinter's general pool, shared across all counterparties | A committed cap underwritten and reserved for your flow |
+| **Availability** | Whatever is free at the moment you quote — a request can be declined | Held for you up to the cap |
+| **Commitment** | None. No agreement, no minimum | A facility agreement with a fixed initial term |
+| **Pricing** | Per fill, charged per day outstanding | Per day outstanding, plus a minimum return on committed capital |
+| **Best for** | Getting live quickly; variable or unproven volume | A published instant-redemption promise; predictable capacity |
+| **Start with** | The [Asset Issuer quickstart](/quickstart/asset-issuer) — no commercial agreement needed | [Talk to us](https://t.me/sprinter_tech/1) — sizing and rate are set during underwriting |
+
+The two can be used together: a dedicated facility for the committed base, shared liquidity for overflow.
+
+## What drives the price
+
+Credit is priced per day outstanding, so the spread is set by the length of your settlement rail:
+
+| Settlement rail | Capital locked | Relative spread per fill |
+|---|---|---|
+| Same-day | Hours | Lowest |
+| T+1 | ~1 day | Low |
+| T+2 – T+3 | 2–3 days | Moderate |
+| T+5 – T+7 | 5–7 days | High |
+| T+8 – T+30 | up to 30 days | Highest |
+
+A committed facility is quoted as an annual rate on committed capacity; just-in-time draws are charged per day and repaid by the settlement. They are the same price expressed two ways.
+
+**Who bears the cost** is a per-facility decision: the end user as a deducted fee, the issuer as a subsidy for a par experience, or a blend.
+
+## Shared liquidity
+
+Quote through [`GET /lifi-intents/rfq`](/api-reference/sprinter/lifi-intents/rfq) and Sprinter prices against its general pool. The quote is firm for its validity window and the liquidity is reserved behind it, but nothing is reserved before you ask.
+
+- **No commitment and no minimum.** You pay only on fills.
+- **Capacity is not guaranteed.** If no pool can serve the size at that moment the endpoint returns `404`, and you fall back to your own path. Keep that fallback — a declined quote should never block a holder from redeeming.
+- **Onboarding still applies.** Sprinter only quotes assets it has underwritten and configured routes for.
+
+## Dedicated facility
+
+A dedicated facility commits capacity to a single asset or flow, so instant redemption can be a promise you publish rather than a best effort. Terms are agreed per facility during underwriting — the tables below are the shape of what gets specified, not fixed values.
+
+### Facility parameters
+
+| Parameter | What it specifies |
+|---|---|
+| **Total facility cap** | The committed ceiling. Normally callable in tranches rather than funded upfront |
+| **Initial pool at launch** | Capital deployed on day one, before the first capital call |
+| **Per-draw order limit** | Maximum value Sprinter will fill in a single transaction |
+| **In-window fill rate** | Execution SLA for orders inside a valid quote window |
+| **Inventory settlement** | The rail and cycle that repays drawn capital |
+| **Supported networks** | Chains the facility is configured for |
+
+### Capital management
+
+- **Capital calls.** Scaling above the initial pool runs through LP capital calls with an agreed notice period. The cap can be extended by mutual agreement.
+- **Repayment.** Drawn capital is repaid by your native settlement rail. Utilisation should stay within any daily cap on that rail — breaching it pushes redemptions into your queue and extends the days capital stays locked.
+
+### Replenishment
+
+Deployed capital recycles into the facility once the underlying settles. The replenishment cycle is the settlement rail, so a slower rail means the same committed capital supports less throughput:
+
+| Settlement rail | Days capital locked | Effect on the facility |
+|---|---|---|
+| T+1 | ~1 business day | Capital turns over quickly; a smaller cap covers more volume |
+| T+4 | ~4 business days, longer across holidays in either calendar | Each draw is locked through the cycle |
+| T+30 | up to 30 days | Throughput is capped by the facility size, not the rail |
+
+Drawn capital is locked until the cycle clears, then recycles automatically. Quote expiry is set per facility — short enough to price accurately, long enough for the redemption to reach your rail.
+
+### Commercials
+
+| Term | Shape |
+|---|---|
+| **Rate within the rail's daily cap** | A fixed spread in basis points over the settlement cycle, additive on top of your own mint and redeem fees |
+| **Volume beyond the daily cap** | Priced and underwritten separately |
+| **Minimum facility return** | An annualised floor on committed capital, measured monthly. Redemption fees count toward it; the issuer pays any shortfall monthly in arrears. Applies to committed capital only |
+| **Term** | A fixed initial term, then rolling by mutual agreement |
+
+<Note>
+  The minimum return is what makes capacity a commitment rather than an intention — it is the price of capital being held for you whether or not you draw on it. It applies only to committed capital, never to shared-liquidity fills.
+</Note>
+
+## Underwriting
+
+Both routes require the asset to be onboarded first; a dedicated facility additionally needs the facility agreement. Underwriting takes 1–2 weeks and runs concurrently with KYB and contract scoping. See [what Sprinter underwrites](/quickstart/asset-issuer#what-sprinter-underwrites) for the full list.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Asset Issuer Quickstart" icon="rocket" href="/quickstart/asset-issuer">
+    Onboard an asset and integrate the two runtime calls.
+  </Card>
+  <Card title="Talk to us" icon="comments" href="https://t.me/sprinter_tech/1">
+    Facility sizing, rate, and asset underwriting.
+  </Card>
+</CardGroup>

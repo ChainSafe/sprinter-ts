@@ -1,0 +1,156 @@
+---
+title: "Request a LI.FI Intents Quote"
+sidebarTitle: "RFQ"
+openapi: get /lifi-intents/rfq
+---
+
+Prices an order against Sprinter liquidity and **reserves that liquidity** for the quote's validity window. The response is shaped like a single element of LI.FI's [request-quote](https://docs.li.fi/lifi-intents/intents-api/request-quote) response, so an existing LI.FI intents client can consume it unchanged.
+
+<Warning>
+A quote is valid for **15 seconds**. The reservation expires with it. Call [`POST /lifi-intents/transaction`](/api-reference/sprinter/lifi-intents/transaction) immediately — do not cache a quote or show it to a user for confirmation before converting it.
+</Warning>
+
+## Behaviour
+
+| | |
+|---|---|
+| **Exclusivity** | Always exclusive to Sprinter. `metadata.exclusiveFor` returns the filler address |
+| **Protocol** | Always `lifi-escrow`. Your API key must be provisioned for it |
+| **Quotes returned** | Exactly one, or an error. There is no empty `quotes` array |
+| **Amount basis** | `type=ExactInput` (default) reads `amount` as the input; `ExactOutput` reads it as the output |
+| **Token defaults** | `srcToken` defaults to the same token symbol as `token`, resolved on the source chain |
+
+## Errors
+
+| Status | Meaning | Retry? |
+|--------|---------|--------|
+| `400` | No route configured for this chain/token pair, or invalid parameters | No — fix the request or ask about onboarding the route |
+| `404` | Route exists, but no pool can serve it right now — capacity is reserved by other in-flight quotes, or pricing is unavailable | Yes, after a short backoff. Reservations expire in 15s, so pressure clears quickly |
+| `401` | Missing or unrecognized `X-Auth-Token` | No |
+
+<Tip>
+`404` is a capacity answer, not a validity answer. Fall back to your own path if it persists, but a single retry a few seconds later often succeeds.
+</Tip>
+
+<RequestExample>
+```bash cURL
+curl --request GET \
+  --url 'https://api.sprinter.tech/lifi-intents/rfq?srcChain=eip155:8453&dstChain=eip155:42161&amount=100000000&token=0xaf88d065e77c8cC2239327C5EDb3A432268e5831&user=0x1F98431c8aD98523631AE4a59f267346ea31F984' \
+  --header 'X-Auth-Token: YOUR_API_KEY'
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://api.sprinter.tech/lifi-intents/rfq",
+    params={
+        "srcChain": "eip155:8453",
+        "dstChain": "eip155:42161",
+        "amount": "100000000",
+        "token": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        "user": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+    },
+    headers={"X-Auth-Token": "YOUR_API_KEY"},
+)
+quote = response.json()["quotes"][0]
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  srcChain: "eip155:8453",
+  dstChain: "eip155:42161",
+  amount: "100000000",
+  token: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+  user: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+});
+
+const response = await fetch(
+  `https://api.sprinter.tech/lifi-intents/rfq?${params}`,
+  { headers: { "X-Auth-Token": "YOUR_API_KEY" } }
+);
+const { quotes } = await response.json();
+const quote = quotes[0];
+```
+
+```go Go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+)
+
+func main() {
+	url := "https://api.sprinter.tech/lifi-intents/rfq" +
+		"?srcChain=eip155:8453&dstChain=eip155:42161&amount=100000000" +
+		"&token=0xaf88d065e77c8cC2239327C5EDb3A432268e5831" +
+		"&user=0x1F98431c8aD98523631AE4a59f267346ea31F984"
+
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Set("X-Auth-Token", "YOUR_API_KEY")
+	resp, _ := http.DefaultClient.Do(req)
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+	fmt.Println(string(body))
+}
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "quotes": [
+    {
+      "validUntil": 1754481615,
+      "eta": 45,
+      "quoteId": "3f8a1c72-95e4-4d6b-b0a1-2c7e9f4d8a13",
+      "provider": "sprinter",
+      "preview": {
+        "inputs": [
+          {
+            "user": "0x00010000022105141f98431c8ad98523631ae4a59f267346ea31f984",
+            "asset": "0x0001000002210514833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+            "amount": "100000000"
+          }
+        ],
+        "outputs": [
+          {
+            "receiver": "0x0001000002a4b1141f98431c8ad98523631ae4a59f267346ea31f984",
+            "asset": "0x0001000002a4b114af88d065e77c8cc2239327c5edb3a432268e5831",
+            "amount": "99850000"
+          }
+        ]
+      },
+      "metadata": {
+        "exclusiveFor": "0x4c4A2f8c81640e47606d3fd77B353E87Ba015584"
+      },
+      "failureHandling": "refund-automatic"
+    }
+  ]
+}
+```
+
+```json 404
+{
+  "error": "no available pools for request"
+}
+```
+</ResponseExample>
+
+## Address format
+
+`user`, `receiver` and `asset` inside `preview` are [ERC-7930](https://eips.ethereum.org/EIPS/eip-7930) interoperable addresses — chain id and account packed into one byte string:
+
+```
+version(2) | chainType(2) | chainRefLen(1) | chainRef(n) | addrLen(1) | addr(20)
+```
+
+`0x0001000002210514833589fc...2913` decodes to USDC on Base (`0x2105` = 8453).
+
+`metadata.exclusiveFor` is a plain 20-byte hex address, not ERC-7930.
+
+## Next step
+
+Pass the quote object straight to [`POST /lifi-intents/transaction`](/api-reference/sprinter/lifi-intents/transaction) to get the transaction that opens the order.

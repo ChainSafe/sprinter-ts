@@ -1,0 +1,59 @@
+---
+title: "Overview"
+description: "Request a firm, liquidity-backed quote through LI.FI Intents, or route a swap against public on-chain liquidity"
+---
+
+Solve RFQ covers the two ways to get an executable price out of Sprinter.
+
+| | **LI.FI Intents** | **Swap API** |
+|---|---|---|
+| **Liquidity** | Sprinter Liquidity — underwritten, reserved for your quote | Public on-chain AMM liquidity |
+| **Price** | Firm. Reserved for 15s and filled at exactly that price | Indicative, subject to slippage |
+| **Use for** | Redemptions, subscriptions, and any flow where the user is promised a price | Generic token swaps, and as a fallback when no Sprinter route exists |
+| **Requires** | Asset onboarded and route configured with Sprinter | Nothing — any supported pair |
+| **Base URL** | `https://api.sprinter.tech` | `https://swaps.sprinter.tech/{network}` |
+| **Auth** | `X-Auth-Token` header | HTTP Basic |
+
+<Tip>
+**Default to LI.FI Intents.** It is the path that draws on Sprinter Liquidity, which is what makes an instant fill at a promised price possible. Reach for the Swap API when the pair is not onboarded with Sprinter, or as a fallback when a quote does not return.
+</Tip>
+
+## LI.FI Intents
+
+Two calls. The first prices the order and holds the liquidity; the second turns that into a transaction the user signs.
+
+```
+GET  /lifi-intents/rfq          → quote (liquidity reserved, 15s)
+POST /lifi-intents/transaction  → same quote + unsigned open() calldata
+                                → reservation refreshed to 60s from this call
+                                → user sends it; Sprinter fills
+```
+
+| Endpoint | Description |
+|----------|-------------|
+| [`GET /lifi-intents/rfq`](/api-reference/sprinter/lifi-intents/rfq) | Firm quote backed by reserved Sprinter liquidity |
+| [`POST /lifi-intents/transaction`](/api-reference/sprinter/lifi-intents/transaction) | Escrow `open` transaction for a quote |
+
+Authenticate the RFQ call with your API key in the `X-Auth-Token` header. The transaction call carries the quote itself, so it needs no header.
+
+The responses follow LI.FI's own [intents API](https://docs.li.fi/lifi-intents/intents-api/request-quote) shapes, with one difference worth coding for: when Sprinter cannot serve a request it returns **`404`**, not a `200` with an empty `quotes` array.
+
+<Note>
+Quotes only return for assets Sprinter has onboarded — underwritten, allocated liquidity to, and configured routes for. See the [Asset Issuer quickstart](/quickstart/asset-issuer) for what onboarding involves.
+</Note>
+
+## Swap API
+
+Route a swap against public on-chain liquidity and get back executable call data. No onboarding, no reservation, no firm price.
+
+| Endpoint | Description |
+|----------|-------------|
+| [`GET /v1/route`](/api-reference/solve/get-v1route) | Optimal swap route and execution call data |
+
+See the [Swap API overview](/api-reference/solve/overview) for base URLs, authentication, and the response format.
+
+## Not this: the Liquidity API
+
+[Sprinter Liquidity](/api-reference/sprinter/liquidity/overview) exposes the borrow-quote and signing endpoints directly. That surface is for **crosschain solvers** running their own fill infrastructure — it hands you a borrow authorization, not a transaction, and expects you to settle the intent yourself.
+
+If you are an asset issuer, wallet, or application asking Sprinter for a price, use LI.FI Intents. The RFQ endpoint runs the same pricing and reservation pipeline and returns something you can sign.

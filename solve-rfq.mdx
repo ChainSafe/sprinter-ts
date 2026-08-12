@@ -1,0 +1,58 @@
+---
+title: "Solve RFQ"
+description: "How you get a price out of Sprinter Liquidity — a firm quote with the liquidity already held behind it"
+---
+
+Solve RFQ is how you get a price out of Sprinter Liquidity. You describe the trade; Sprinter answers with a price and **holds the liquidity behind that answer** while you decide.
+
+That second half is the part that matters. Most quoting is an estimate: a router prices a path, and what you actually get depends on what the pool looks like when your transaction lands. An RFQ quote from Sprinter is a commitment — the capital to fill it is reserved the moment the quote is issued.
+
+## Why the price can be firm
+
+Three things have to be true at once, and they are the reason this sits on top of Sprinter Liquidity rather than beside it:
+
+| | |
+|---|---|
+| **The capital exists** | Sprinter Liquidity has already underwritten the asset, allocated liquidity to it, and configured the route. Nothing is sourced at quote time |
+| **It is reserved** | Issuing a quote takes that liquidity off the shelf for the life of the quote, so a second request cannot spend it |
+| **The fill is exclusive** | The resulting order is published as an exclusive limit order to Sprinter's filler, so the price you were quoted is the price that executes |
+
+Take any one away and the quote degrades into an estimate. This is the difference between telling a holder "roughly this" and telling them a number.
+
+<Note>
+  A quote is short-lived by design — it is capital held out of use. Quote, then act. The window is measured in seconds, not minutes, and treating a quote as cacheable is the most common integration mistake.
+</Note>
+
+## Two ways to consume it
+
+| | **LI.FI Intents** | **Swap API** |
+|---|---|---|
+| **Backed by** | Sprinter Liquidity — reserved for your quote | Public on-chain AMM liquidity |
+| **Price** | Firm | Indicative, subject to slippage |
+| **Use for** | Redemptions, subscriptions, any flow where a user is promised a price | Generic token swaps, and as a fallback when no Sprinter route exists |
+| **Requires** | The asset onboarded with Sprinter | Nothing — any supported pair |
+
+Default to LI.FI Intents. Reach for the Swap API when the pair is not onboarded, or as a fallback when a quote does not return.
+
+## What it is not
+
+- **Not a router.** Solve RFQ does not search for the best path across venues. It answers one question: what will Sprinter pay, right now, for this position.
+- **Not always available.** Capacity is finite. A request can be declined, and your integration needs a fallback — for an issuer that means your native redemption queue.
+- **Not a credit line.** Sprinter Credit is collateralized borrowing against assets you hold. Solve RFQ prices a settlement delay and is repaid by the settlement itself.
+
+## Where to go next
+
+<CardGroup cols={2}>
+  <Card title="Asset Issuer Quickstart" icon="rocket" href="/quickstart/asset-issuer">
+    The two runtime calls, end to end, with onboarding.
+  </Card>
+  <Card title="Solve RFQ API reference" icon="code" href="/api-reference/solve-rfq/overview">
+    Endpoints, parameters, auth, and error behaviour.
+  </Card>
+  <Card title="Pricing & Credit Facilities" icon="tag" href="/pricing">
+    What a fill costs, and shared liquidity versus a dedicated facility.
+  </Card>
+  <Card title="Sprinter Liquidity" icon="database" href="/stash-v1/overview">
+    The capital layer underneath — where the liquidity comes from.
+  </Card>
+</CardGroup>

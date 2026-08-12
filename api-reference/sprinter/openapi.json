@@ -2298,6 +2298,185 @@
                     }
                 }
             }
+        },
+        "/lifi-intents/rfq": {
+            "get": {
+                "description": "Prices a LI.FI intents order against Sprinter liquidity and reserves that liquidity for the quote's validity window. The response is shaped like a single element of LI.FI's own request-quote response.",
+                "tags": [
+                    "Liquidity"
+                ],
+                "summary": "Request a LI.FI intents quote backed by Sprinter liquidity",
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "description": "Source CAIP chain ID (e.g., eip155:8453)",
+                        "name": "srcChain",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Destination CAIP chain ID (e.g., eip155:42161)",
+                        "name": "dstChain",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Amount in the smallest denomination",
+                        "name": "amount",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Destination (borrow) token address (hex)",
+                        "name": "token",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "User address on the source chain (hex)",
+                        "name": "user",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Source token address (hex). Defaults to the destination token's symbol on the source chain",
+                        "name": "srcToken",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Receiver address on the destination chain (hex); defaults to user",
+                        "name": "receiver",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Quote algorithm type (ExactInput or ExactOutput); defaults to ExactInput",
+                        "name": "type",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "LI.FI intents quotes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/lifiintents.QuoteResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request due to invalid input, or no route configured for this pair",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/responses.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No pool could serve the request right now (capacity exhausted or pricing unavailable)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/responses.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/responses.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/lifi-intents/transaction": {
+            "post": {
+                "description": "Turns a quote into an unsigned `open` call on the LI.FI intents input settler escrow. When the quote carries a `quoteId` from the RFQ endpoint, the liquidity reservation is re-keyed to the resulting on-chain order id.",
+                "tags": [
+                    "Liquidity"
+                ],
+                "summary": "Build the escrow open transaction for a lifi-intents quote",
+                "requestBody": {
+                    "description": "A quote from the RFQ response",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/lifiintents.Quote"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "The same quote with transactionRequest populated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/lifiintents.Quote"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request due to invalid input",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/responses.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/responses.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -2976,6 +3155,199 @@
                     },
                     "value": {
                         "$ref": "#/components/schemas/types.BigInt"
+                    }
+                }
+            },
+            "lifiintents.Input": {
+                "type": "object",
+                "required": [
+                    "amount",
+                    "asset",
+                    "user"
+                ],
+                "properties": {
+                    "user": {
+                        "type": "string",
+                        "description": "Payer, as an ERC-7930 interoperable address."
+                    },
+                    "asset": {
+                        "type": "string",
+                        "description": "Input token, as an ERC-7930 interoperable address."
+                    },
+                    "amount": {
+                        "type": "string",
+                        "description": "Amount in the smallest denomination."
+                    }
+                }
+            },
+            "lifiintents.Metadata": {
+                "type": "object",
+                "properties": {
+                    "exclusiveFor": {
+                        "type": "string",
+                        "description": "Address granted exclusivity over the fill. Defaults to Sprinter's filler address."
+                    }
+                }
+            },
+            "lifiintents.Order": {
+                "type": "object",
+                "description": "Optional overrides for the escrow open call. Any field left unset is derived by the transaction endpoint.",
+                "properties": {
+                    "nonce": {
+                        "type": "string"
+                    },
+                    "expires": {
+                        "type": "integer",
+                        "description": "Unix timestamp after which the order can no longer settle."
+                    },
+                    "fillDeadline": {
+                        "type": "integer",
+                        "description": "Unix timestamp after which the order can no longer be filled."
+                    },
+                    "inputOracle": {
+                        "type": "string"
+                    }
+                }
+            },
+            "lifiintents.Output": {
+                "type": "object",
+                "required": [
+                    "amount",
+                    "asset",
+                    "receiver"
+                ],
+                "properties": {
+                    "receiver": {
+                        "type": "string",
+                        "description": "Recipient, as an ERC-7930 interoperable address."
+                    },
+                    "asset": {
+                        "type": "string",
+                        "description": "Output token, as an ERC-7930 interoperable address."
+                    },
+                    "amount": {
+                        "type": "string",
+                        "description": "Amount in the smallest denomination."
+                    }
+                }
+            },
+            "lifiintents.Preview": {
+                "type": "object",
+                "required": [
+                    "inputs",
+                    "outputs"
+                ],
+                "properties": {
+                    "inputs": {
+                        "type": "array",
+                        "minItems": 1,
+                        "description": "Tokens escrowed on the origin chain. Every input must sit on the same origin chain.",
+                        "items": {
+                            "$ref": "#/components/schemas/lifiintents.Input"
+                        }
+                    },
+                    "outputs": {
+                        "type": "array",
+                        "minItems": 1,
+                        "description": "Tokens delivered to the receiver.",
+                        "items": {
+                            "$ref": "#/components/schemas/lifiintents.Output"
+                        }
+                    }
+                }
+            },
+            "lifiintents.Quote": {
+                "type": "object",
+                "required": [
+                    "preview"
+                ],
+                "properties": {
+                    "preview": {
+                        "$ref": "#/components/schemas/lifiintents.Preview"
+                    },
+                    "quoteId": {
+                        "type": "string",
+                        "description": "Identifier for the liquidity reservation backing this quote. Pass the quote back to /lifi-intents/transaction to keep it."
+                    },
+                    "validUntil": {
+                        "type": "integer",
+                        "description": "Unix timestamp after which the quote and its reservation expire."
+                    },
+                    "eta": {
+                        "type": "integer",
+                        "description": "Estimated fill duration in seconds."
+                    },
+                    "provider": {
+                        "type": "string",
+                        "description": "Always `sprinter`."
+                    },
+                    "failureHandling": {
+                        "type": "string",
+                        "description": "Always `refund-automatic` \u2014 an unfilled order is reclaimable on the escrow."
+                    },
+                    "partialFill": {
+                        "type": "boolean",
+                        "description": "Whether the order may be partially filled. Sprinter quotes are all-or-nothing."
+                    },
+                    "metadata": {
+                        "$ref": "#/components/schemas/lifiintents.Metadata"
+                    },
+                    "order": {
+                        "$ref": "#/components/schemas/lifiintents.Order"
+                    },
+                    "transactionRequest": {
+                        "$ref": "#/components/schemas/lifiintents.TransactionRequest"
+                    }
+                }
+            },
+            "lifiintents.QuoteResponse": {
+                "type": "object",
+                "required": [
+                    "quotes"
+                ],
+                "properties": {
+                    "quotes": {
+                        "type": "array",
+                        "description": "Quotes offered for the request. Sprinter returns exactly one.",
+                        "items": {
+                            "$ref": "#/components/schemas/lifiintents.Quote"
+                        }
+                    }
+                }
+            },
+            "lifiintents.TransactionRequest": {
+                "type": "object",
+                "description": "Unsigned transaction calling open() on the input settler escrow. Send it from the user's wallet.",
+                "required": [
+                    "chainId",
+                    "data",
+                    "from",
+                    "to",
+                    "value"
+                ],
+                "properties": {
+                    "from": {
+                        "type": "string"
+                    },
+                    "to": {
+                        "type": "string",
+                        "description": "The LI.FI input settler escrow contract."
+                    },
+                    "chainId": {
+                        "type": "integer"
+                    },
+                    "data": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string",
+                        "description": "Hex-encoded native value; `0x0` unless an input is the native token."
+                    },
+                    "gasPrice": {
+                        "type": "string"
+                    },
+                    "gasLimit": {
+                        "type": "string"
                     }
                 }
             },

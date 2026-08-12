@@ -72,8 +72,13 @@
       "group": "Sprinter Liquidity",
       "pages": [
         "stash-v1/overview",
-        "stash-v1/redemption-liquidity",
-        "stash-v1/contracts"
+        "solve-rfq"
+      ]
+    },
+    {
+      "group": "Pricing",
+      "pages": [
+        "pricing"
       ]
     },
     {
@@ -144,12 +149,20 @@
       ]
     },
     {
-      "group": "Swaps",
+      "group": "Solve RFQ",
       "pages": [
-        "api-reference/solve/overview",
+        "api-reference/solve-rfq/overview",
         {
-          "group": "Swap Actions",
+          "group": "LI.FI Intents",
           "pages": [
+            "api-reference/sprinter/lifi-intents/rfq",
+            "api-reference/sprinter/lifi-intents/transaction"
+          ]
+        },
+        {
+          "group": "Swap API",
+          "pages": [
+            "api-reference/solve/overview",
             "api-reference/solve/get-v1route"
           ]
         }
@@ -159,6 +172,16 @@
   "openapi": [
     "api-reference/sprinter/openapi.json",
     "api-reference/solve/openapi.yaml"
+  ],
+  "redirects": [
+    {
+      "source": "/stash-v1/redemption-liquidity",
+      "destination": "/quickstart/asset-issuer"
+    },
+    {
+      "source": "/stash-v1/contracts",
+      "destination": "/stash-v1/overview"
+    }
   ],
   "logo": {
     "light": "/logo/light.svg",

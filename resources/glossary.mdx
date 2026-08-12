@@ -37,6 +37,10 @@ An entity (user, app, or agent) granted access to a Sprinter Credit line on beha
 
 The act of drawing funds from an open credit line up to the available credit limit.
 
+### Exclusive Fill
+
+An order published so that only one named filler may execute it, for a defined window. Sprinter quotes are exclusive to Sprinter's filler address, which is what makes the quoted price the executed price. After the exclusivity window ends, the order typically opens to any solver before its fill deadline.
+
 ### Fill
 
 A fill represents the full lifecycle: detecting a user intent, borrowing liquidity, executing the transaction, repaying liquidity, and realizing solver and protocol profits.
@@ -44,6 +48,10 @@ A fill represents the full lifecycle: detecting a user intent, borrowing liquidi
 ### Health Factor
 
 A single number indicating how close a position is to liquidation, calculated as `(Collateral Value x Maintenance LTV) / Outstanding Debt`. A Health Factor above 1.0 is safe; below 1.0 the position is eligible for liquidation.
+
+### Intent
+
+An order that states the outcome a user wants — this asset out, that asset in, on this chain — without specifying how to achieve it. The user escrows the inputs; a solver competes to deliver the outputs and is repaid from escrow on settlement.
 
 ### Intent Systems
 
@@ -88,6 +96,10 @@ The Sprinter Credit component that makes credit configurable. Every credit line 
 ### Productive Collateral
 
 Collateral assets that continue to generate yield while locked in Sprinter Credit, making credit cheaper by design. Sprinter Credit integrates with DeFi strategies from Gauntlet and YO for this purpose.
+
+### Solve RFQ
+
+Sprinter's request-for-quote surface: you describe a trade and Sprinter returns a firm price with the liquidity reserved behind it, plus a transaction that opens the order. Unlike a [borrow quote](#borrow-quote), which is an estimate for solvers, an RFQ quote is a commitment for the life of its validity window. See [Solve RFQ](/solve-rfq).
 
 ### Solvers
 
